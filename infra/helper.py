@@ -326,6 +326,8 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_external_project_args(run_fuzzer_parser)
   run_fuzzer_parser.add_argument(
       '--corpus-dir', help='directory to store corpus for the fuzz target')
+  run_fuzzer_parser.add_argument(
+    '--runtime_limit', help='Specify the timeout limit for the session')
   run_fuzzer_parser.add_argument('project',
                                  help='name of the project or path (external)')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
@@ -390,6 +392,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_external_project_args(coverage_parser)
   _add_architecture_args(coverage_parser)
   _add_base_image_tag_args(coverage_parser)
+  _add_environment_args(coverage_parser)
 
   introspector_parser = subparsers.add_parser(
       'introspector',
@@ -1170,6 +1173,9 @@ def coverage(args):  # pylint: disable=too-many-branches
       'COVERAGE_EXTRA_ARGS=%s' % extra_cov_args,
       'ARCHITECTURE=' + args.architecture,
   ]
+  
+  if args.e:
+    env += args.e
 
   if not args.no_serve:
     env.append(f'HTTP_PORT={args.port}')
@@ -1351,14 +1357,16 @@ def run_fuzzer(args):
                                                    fuzzer=args.fuzzer_name)
     ])
 
+  exec_command = ["run_fuzzer", args.fuzzer_name]
+  if args.runtime_limit:
+    exec_command = ["timeout", f"{args.runtime_limit}s", "run_fuzzer", args.fuzzer_name]
   run_args.extend([
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      _get_base_runner_image(args),
-      'run_fuzzer',
-      args.fuzzer_name,
-  ] + args.fuzzer_args)
+      _get_base_runner_image(args)]
+      + exec_command
+      + args.fuzzer_args)
 
   return docker_run(run_args, architecture=args.architecture)
 

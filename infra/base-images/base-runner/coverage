@@ -84,10 +84,26 @@ function run_fuzz_target {
   local profraw_file_mask="$DUMPS_DIR/$target.*.profraw"
   local profdata_file="$DUMPS_DIR/$target.profdata"
   local corpus_real="$CORPUS_DIR/${target}"
+  local corpus_no_crashes="$CORPUS_DIR/${target}_no_crashes"
 
   # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
   rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+
+  # Rerunning afl-produced corpora with libfuzzer can still produce crashes that hinder coverage collection
+  # Run a preprocessing step to only keep files that don't crash
+  if [ -n "${AFL_COV:-}" ]; then
+    mkdir -p "$corpus_no_crashes"
+    for file in "$corpus_real"/*; do
+      [ -e "$file" ] || continue
+      timeout -s KILL 30s "$OUT/$target" "$file" 
+      exec_retcode=$?
+      if [ "$exec_retcode" -eq 0 ]; then
+        cp "$file" "$corpus_no_crashes/"
+      fi
+    done
+    corpus_real="$corpus_no_crashes"
+  fi
 
   # Use -merge=1 instead of -runs=0 because merge is crash resistant and would
   # let to get coverage using all corpus files even if there are crash inputs.
@@ -95,8 +111,9 @@ function run_fuzz_target {
   # because (A) corpuses are already minimized; (B) we do not use sancov, and so
   # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
 
+  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
   cov_retcode=$?
@@ -132,6 +149,9 @@ function run_fuzz_target {
 
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
+
+  llvm-cov export -format=lcov -instr-profile=$profdata_file -object=$target \
+      $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.lcov_total
 
   # If grep returned zero an error was matched.
   echo "Coverage error, creating log file: $FUZZER_STATS_DIR/${target}_error.log"
