@@ -94,7 +94,7 @@ def run_experiment(project_name,
 
   run_step = {
       'name':
-          'gcr.io/oss-fuzz-base/base-runner',
+          'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
       'env':
           env,
       'args': [
