@@ -15,4 +15,18 @@
 #
 ################################################################################
 
+
+# build script moves header file, make sure to copy it back to source for rebuilding
+export WORK=/worktmp
+mkdir -p $WORK
+
+cp $WORK/lib/* $SRC/jbigkit/libjbig/ 2>/dev/null || true
+cp $WORK/include/* $SRC/jbigkit/libjbig/ 2>/dev/null || true
+
+# mkdir commands run into issues when building normally
+echo '#!/bin/bash' > /usr/local/bin/mkdir
+echo '/bin/mkdir -p "$@"' >> /usr/local/bin/mkdir
+chmod +x /usr/local/bin/mkdir
+
+
 . contrib/oss-fuzz/build.sh
