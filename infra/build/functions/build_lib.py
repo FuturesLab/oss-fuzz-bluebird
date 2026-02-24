@@ -85,7 +85,7 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64', 'i386', 'aarch64']),
     'afl':
         EngineInfo(upload_bucket='clusterfuzz-builds-afl',
-                   supported_sanitizers=['address'],
+                   supported_sanitizers=['address', 'none'],
                    supported_architectures=['x86_64']),
     'honggfuzz':
         EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',

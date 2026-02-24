@@ -42,6 +42,8 @@ INDEXER_BUILD_TYPE = 'indexer'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
+if "LOCAL_TEST" in os.environ:
+  GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-bluebird-gcb-experiment-logs'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede']
@@ -777,6 +779,10 @@ def run_build(oss_fuzz_project,
       'logsBucket': bucket,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
+  use_build_pool = True
+  if "LOCAL_TEST" in os.environ:
+    use_build_pool = False
+
   return build_lib.run_build(oss_fuzz_project,
                              build_steps,
                              credentials,
@@ -784,7 +790,8 @@ def run_build(oss_fuzz_project,
                              timeout,
                              body_overrides=body_overrides,
                              tags=tags,
-                             experiment=experiment)
+                             experiment=experiment,
+                             use_build_pool=use_build_pool)
 
 
 def parse_args(description, args):
