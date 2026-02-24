@@ -98,12 +98,13 @@ function run_fuzz_target {
   if [ -n "${AFL_COV:-}" ]; then
     find "$corpus_real" -type f -print0 | \
     while IFS= read -r -d '' file; do
+        echo "running $file"
         timeout 30s "$OUT/$target" "$file"
+        exec_retcode=$?
         if [ "$exec_retcode" -ne 0 ]; then
           echo "File $file returned with code: $exec_retcode" >> $LOGS_DIR/$target.log
         fi
     done
-    exec_retcode=$?
   fi
 
   # Use -merge=1 instead of -runs=0 because merge is crash resistant and would
