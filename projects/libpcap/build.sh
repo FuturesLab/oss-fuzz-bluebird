@@ -17,11 +17,10 @@
 
 cd libpcap
 # build project
-mkdir build
-cd build
-cmake ..
-make
-
+mkdir -p build && cd build
+cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_REMOTE=OFF -DCMAKE_BUILD_TYPE=Release ..
+# Avoid building testprogs since the main methods expects certain symbols
+cmake --build . --target pcap_static -- -j$(nproc)
 
 # build fuzz targets
 for target in pcap filter both
