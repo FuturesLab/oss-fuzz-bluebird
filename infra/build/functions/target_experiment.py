@@ -124,20 +124,6 @@ def run_afl_experiment(project_name,
   })
 
   if upload_drivers_path:
-    # debugging
-    steps.append({
-        'name':
-            'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
-        'entrypoint':
-            '/bin/bash',
-        'args': [
-            '-c',
-            (
-                f'echo {fuzz_target_path}; ls {fuzz_target_path}; '
-            ),
-        ],
-    })
-
   # Upload compiled binaries. Copy the binary directly from fuzz_target_path and asan_target_path
   steps.append({
       'name':
@@ -146,7 +132,7 @@ def run_afl_experiment(project_name,
           '-m',
           'cp',
           asan_target_path,
-          upload_drivers_path + "/"
+          upload_drivers_path + "/asan_driver"
       ],
   })
 
@@ -157,7 +143,7 @@ def run_afl_experiment(project_name,
           '-m',
           'cp',
           fuzz_target_path,
-          upload_drivers_path + "/"
+          upload_drivers_path + "/fuzz_driver"
       ],
   })
 
