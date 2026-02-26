@@ -138,21 +138,28 @@ def run_afl_experiment(project_name,
         ],
     })
 
-    # Upload binary. Copy the binary directly from fuzz_target_path and asan_target_path
-    steps.append({
-        'name':
-            'gcr.io/cloud-builders/gsutil',
-        'entrypoint':
-            '/bin/bash',
-        'args': [
-            '-c',
-            (
-            f'gsutil cp {asan_target_path} {upload_drivers_path}" || true; '
-            f'gsutil cp {fuzz_target_path} {upload_drivers_path} || true;'
-            )
-        ],
-    })
+  # Upload compiled binaries. Copy the binary directly from fuzz_target_path and asan_target_path
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          asan_target_path,
+          upload_drivers_path + "/"
+      ],
+  })
 
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'cp',
+          fuzz_target_path,
+          upload_drivers_path + "/"
+      ],
+  })
 
   # Upload the whole afl 'out' directory.
   steps.append({
@@ -162,7 +169,7 @@ def run_afl_experiment(project_name,
           '/bin/bash',
       'args': [
           '-c',
-          (f'gsutil -m cp -r {local_afl_output_dir} {upload_afl_output_path} '
+          (f'gsutil -m cp -r {local_afl_output_dir} {upload_afl_output_path}'
           '|| true'),
       ],
   })
