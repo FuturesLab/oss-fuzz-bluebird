@@ -37,11 +37,13 @@ def run_afl_experiment(project_name,
                    upload_coverage_path,
                    experiment_name,
                    upload_reproducer_path,
+                   upload_afl_output_path,
+                   upload_drivers_path,
                    tags,
                    use_cached_image,
                    run_timeout,
                    real_project_name=None):
-                   
+    
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -121,21 +123,21 @@ def run_afl_experiment(project_name,
       'args': ['-m', 'cp', local_output_path, output_path]
   })
 
-  # Upload the whole afl 'out' directory.
-  steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'entrypoint':
-          '/bin/bash',
-      'args': [
-          '-c',
-          (f'gsutil -m cp -r {local_afl_output_dir} {upload_corpus_path} '
-          '|| true'),
-      ],
-  })
+  if upload_drivers_path:
+    # debugging
+    steps.append({
+        'name':
+            'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
+        'entrypoint':
+            '/bin/bash',
+        'args': [
+            '-c',
+            (
+                f'echo {fuzz_target_path}; ls {fuzz_target_path}; '
+            ),
+        ],
+    })
 
-
-  if upload_reproducer_path:
     # Upload binary. Copy the binary directly from fuzz_target_path and asan_target_path
     steps.append({
         'name':
@@ -144,11 +146,26 @@ def run_afl_experiment(project_name,
             '/bin/bash',
         'args': [
             '-c',
-            (f'cp {fuzz_target_path} {local_target_dir} 2>/dev/null || true'
-             f'cp {asan_target_path} {local_target_dir} 2>/dev/null || true'
+            (
+            f'gsutil cp {asan_target_path} {upload_drivers_path}" || true; '
+            f'gsutil cp {fuzz_target_path} {upload_drivers_path} || true;'
             )
         ],
     })
+
+
+  # Upload the whole afl 'out' directory.
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'entrypoint':
+          '/bin/bash',
+      'args': [
+          '-c',
+          (f'gsutil -m cp -r {local_afl_output_dir} {upload_afl_output_path} '
+          '|| true'),
+      ],
+  })
 
 # Get baseline harness coverage
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
@@ -452,6 +469,8 @@ def run_experiment(project_name,
   steps = build_project.get_build_steps_for_project(
       project, config, use_caching=use_cached_image)
 
+  
+
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
   local_corpus_path_base = '/workspace/corpus'
@@ -696,6 +715,10 @@ def main():
   parser.add_argument('--use_cached_image',
                       action='store_true',
                       help='Use cached images post build.')
+  parser.add_argument('--upload_afl',
+                      help='GCS location to upload afl output directory.')
+  parser.add_argument('--upload_drivers',
+                      help='GCS location to upload compiled fuzz drivers.')
   parser.add_argument('--use_afl',
                       action='store_true',
                       help='Use afl as the underlying fuzzing engine.')
@@ -708,10 +731,13 @@ def main():
   args = parser.parse_args()
 
   if args.use_afl:
+    if args.upload_afl is None:
+        logging.error('upload_afl argument is required for afl fuzzing')
+        return
     run_afl_experiment(args.project, args.target, args.args, args.upload_output_log,
                  args.upload_build_log, args.upload_corpus,
                  args.upload_coverage, args.experiment_name,
-                 args.upload_reproducer, args.tags, args.use_cached_image,
+                 args.upload_reproducer, args.upload_afl, args.upload_drivers, args.tags, args.use_cached_image,
                  args.run_timeout, args.real_project)
   else:
     run_experiment(args.project, args.target, args.args, args.upload_output_log,

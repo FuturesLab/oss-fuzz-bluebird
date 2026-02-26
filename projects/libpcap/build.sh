@@ -35,6 +35,7 @@ cp testprogs/fuzz/fuzz_*.options $OUT/
 # builds corpus
 cd $SRC/tcpdump/
 zip -r fuzz_pcap_seed_corpus.zip tests/
+cp fuzz_pcap_seed_corpus.zip $OUT/fuzz_both_seed_corpus.zip 
 cp fuzz_pcap_seed_corpus.zip $OUT/
 cd $SRC/libpcap/testprogs/BPF
 mkdir corpus
