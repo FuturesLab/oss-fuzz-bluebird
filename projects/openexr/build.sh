@@ -28,7 +28,7 @@ set -x
 
 BUILD_DIR=$WORK/_build.oss-fuzz
 
-cmake -S $SRC/openexr -B $BUILD_DIR --preset oss_fuzz
+cmake -S $SRC/openexr -B $BUILD_DIR --preset oss_fuzz --fresh
 cmake --build $BUILD_DIR --target oss_fuzz -j"$(nproc)"
 cmake --install $BUILD_DIR --component oss_fuzz
 

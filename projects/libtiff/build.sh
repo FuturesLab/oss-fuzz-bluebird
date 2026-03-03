@@ -28,5 +28,33 @@ echo '#!/bin/bash' > /usr/local/bin/mkdir
 echo '/bin/mkdir -p "$@"' >> /usr/local/bin/mkdir
 chmod +x /usr/local/bin/mkdir
 
+# Redundant 'find' commands for every build are costly, patch this out
+python3 - <<'PY'
+from pathlib import Path
+p = Path("contrib/oss-fuzz/build.sh")
+s = p.read_text()
+old = """mkdir afl_testcases
+(cd afl_testcases; tar xf "$SRC/afl_testcases.tgz")
+mkdir tif
+find afl_testcases -type f -name '*.tif' -exec mv -n {} tif/ \;
+zip -rj tif.zip tif/
+cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
+cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
+"""
+new = """if [ ! -d "afl_testcases" ]; then
+    mkdir afl_testcases
+    (cd afl_testcases; tar xf "$SRC/afl_testcases.tgz")
+    mkdir tif
+    find afl_testcases -type f -name '*.tif' -exec mv -n {} tif/ \;
+    zip -rj tif.zip tif/
+    cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
+    cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
+fi
+"""
+if old in s:
+    s = s.replace(old, new, 1)
+    p.write_text(s)
+PY
+
 
 . contrib/oss-fuzz/build.sh

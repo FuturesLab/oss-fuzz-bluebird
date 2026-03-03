@@ -22,4 +22,5 @@ if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
   rm -f $SRC/curl_fuzzer/build/curl-install/lib/libcurl.a
 fi
 
+echo "export FUZZ_TARGETS=fuzz_url" > scripts/fuzz_targets
 ./ossfuzz.sh

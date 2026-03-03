@@ -114,7 +114,7 @@ function run_fuzz_target {
   # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
 
-  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  # local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
   
   # export LLVM_PROFILE_FILE=$profraw_file
   # timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
@@ -142,7 +142,7 @@ function run_fuzz_target {
     target=(${target//@/ }[0])
   fi
   profraw_update.py $OUT/$target -i $profraw_file_mask
-  llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
+  llvm-profdata merge -j=$NPROC -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
   rm $profraw_file_mask
