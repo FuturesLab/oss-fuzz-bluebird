@@ -20,3 +20,12 @@ set -u
 pushd libjpeg-turbo.main
 sh fuzz/build.sh
 popd
+
+# create combined corpus of all seeds
+mkdir combined_corpus
+unzip -q "$SRC/decompress_fuzzer_seed_corpus.zip" -d combined_corpus
+unzip -q "$SRC/compress_fuzzer_seed_corpus.zip" -d combined_corpus
+
+pushd combined_corpus
+zip -r "$OUT/compress_fuzzer_seed_corpus.zip" .
+popd

@@ -57,3 +57,6 @@ for bits in "" "_16" "_32"; do
     cp "testdata/fuzzing/pcre2_fuzzer${bits}.options" "${OUT}/pcre2_fuzzer${bits}${linksize}.options"
   done
 done
+
+# setup target corpus
+zip -r $OUT/pcre2_fuzzer_seed_corpus.zip testdata/

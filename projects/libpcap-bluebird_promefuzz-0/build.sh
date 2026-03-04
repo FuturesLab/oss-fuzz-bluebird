@@ -41,6 +41,3 @@ mkdir corpus
 ls *.txt | while read i; do tail -1 $i > corpus/$i; done
 zip -r fuzz_filter_seed_corpus.zip corpus/
 cp fuzz_filter_seed_corpus.zip $OUT/
-
-# merged seed files
-zip -r $OUT/fuzz_both_seed_corpus.zip tests/ corpus/

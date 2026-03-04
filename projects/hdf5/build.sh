@@ -53,3 +53,6 @@ mkdir $SRC/hdf5/build-test
 cd $SRC/hdf5/build-test
 cmake -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=ON ..
 cmake --build . --verbose --config Release -j$(nproc)
+
+# add corpus for target name
+cp $OUT/h5_extended_fuzzer_seed_corpus.zip $OUT/h5_read_fuzzer_seed_corpus.zip

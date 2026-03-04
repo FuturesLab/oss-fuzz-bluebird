@@ -43,6 +43,7 @@ $CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-name.o \
     $LIB_FUZZING_ENGINE $SRC/c-ares/src/lib/.libs/libcares.a
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-zip -j $OUT/ares_parse_reply_fuzzer_seed_corpus.zip $SRC/c-ares/test/fuzzinput/*
+# Combine all seeds into target zip
+zip -j $OUT/ares_parse_reply_fuzzer_seed_corpus.zip $SRC/c-ares/test/fuzzinput/* $SRC/c-ares/test/fuzznames/*
 zip -j $OUT/ares_create_query_fuzzer_seed_corpus.zip \
     $SRC/c-ares/test/fuzznames/*

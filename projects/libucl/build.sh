@@ -26,3 +26,5 @@ $CC $CFLAGS -c tests/fuzzers/ucl_add_string_fuzzer.c \
   -o $OUT/ucl_add_string_fuzzer.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $OUT/ucl_add_string_fuzzer.o -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I. -o $OUT/ucl_add_string_fuzzer
+
+zip -r $OUT/ucl_add_string_fuzzer_seed_corpus.zip $SRC/libucl/tests/basic
