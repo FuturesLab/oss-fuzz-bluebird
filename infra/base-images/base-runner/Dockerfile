@@ -137,3 +137,5 @@ COPY bad_build_check \
     test_one.py \
     python_coverage_runner_help.py \
     /usr/local/bin/
+
+COPY base_seeds /opt/base_seeds
