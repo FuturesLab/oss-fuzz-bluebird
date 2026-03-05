@@ -24,3 +24,5 @@ fi
 
 echo "export FUZZ_TARGETS=fuzz_url" > scripts/fuzz_targets
 ./ossfuzz.sh
+
+
