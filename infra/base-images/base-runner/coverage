@@ -99,7 +99,7 @@ function run_fuzz_target {
     find "$corpus_real" -type f -print0 | \
     while IFS= read -r -d '' file; do
         echo "running $file"
-        timeout 30s "$OUT/$target" "$file"
+        timeout 5s "$OUT/$target" "$file" > /dev/null 2>&1
         exec_retcode=$?
         if [ "$exec_retcode" -ne 0 ]; then
           echo "File $file returned with code: $exec_retcode" >> $LOGS_DIR/$target.log
