@@ -26,3 +26,5 @@ echo "export FUZZ_TARGETS=fuzz_url" > scripts/fuzz_targets
 # create merged corpus
 zip -r $OUT/fuzz_url_seed_corpus.zip  $SRC/curl_fuzzer/corpora/*
 ./ossfuzz.sh
+
+
