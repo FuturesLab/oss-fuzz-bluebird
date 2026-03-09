@@ -26,7 +26,7 @@ import build_lib
 import build_project
 
 # 12 hours, allowing more than enough waiting time before cloud build starts.
-build_lib.BUILD_TIMEOUT = 12 * 60 * 60
+build_lib.BUILD_TIMEOUT = 24 * 60 * 60
 
 def run_afl_experiment(project_name,
                    target_name,
