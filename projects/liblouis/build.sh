@@ -15,9 +15,15 @@
 #
 ################################################################################
 
+
+sed -i 's/main/main2/g' tests/fuzzing/fuzz_backtranslate.c && \
+sed -i 's/main/main2/g' tests/fuzzing/fuzz_translate_generic.c && \
+sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_backtranslate.c && \
+sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_translate_generic.c
+
+
 $SRC/liblouis/tests/fuzzing/build.sh
 
 # add more seeds than just one input to the corpus
-ls $SRC
 rm -f "$OUT/table_fuzzer_seed_corpus.zip"
 zip -r "$OUT/table_fuzzer_seed_corpus.zip" "$SRC/liblouis/tests/tables"
