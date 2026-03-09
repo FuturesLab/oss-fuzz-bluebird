@@ -46,10 +46,10 @@ new = """if [ ! -d "afl_testcases" ]; then
     (cd afl_testcases; tar xf "$SRC/afl_testcases.tgz")
     mkdir tif
     find afl_testcases -type f -name '*.tif' -exec mv -n {} tif/ \;
-    zip -rj tif.zip tif/
-    cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
-    cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
 fi
+zip -rj tif.zip tif/
+cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
+cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
 """
 if old in s:
     s = s.replace(old, new, 1)
