@@ -18,4 +18,6 @@
 $SRC/liblouis/tests/fuzzing/build.sh
 
 # add more seeds than just one input to the corpus
-zip -j $OUT/table_fuzzer_seed_corpus.zip $SRC/liblouis/tables
+ls $SRC
+rm -f "$OUT/table_fuzzer_seed_corpus.zip"
+zip -r "$OUT/table_fuzzer_seed_corpus.zip" "$SRC/liblouis/tests/tables"
