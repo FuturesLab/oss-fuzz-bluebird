@@ -25,7 +25,7 @@ import google.auth
 import build_lib
 import build_project
 
-# 12 hours, allowing more than enough waiting time before cloud build starts.
+# 24 hour uptime
 build_lib.BUILD_TIMEOUT = 24 * 60 * 60
 
 def run_afl_experiment(project_name,
@@ -63,7 +63,7 @@ def run_afl_experiment(project_name,
   # Override sanitizers and engine because we only care about libFuzzer+ASan
   # for benchmarking purposes.
   build_project.set_yaml_defaults(project_yaml)
-  project_yaml['sanitizers'] = ['address', 'none']
+  project_yaml['sanitizers'] = ['none']
   project_yaml['fuzzing_engines'] = ['afl']
   project_yaml['architectures'] = ['x86_64']
 
@@ -77,7 +77,7 @@ def run_afl_experiment(project_name,
     # OSS-Fuzz-Gen generated benchmark), record the real one here.
     project.real_name = real_project_name
 
-  # Build asan-instrumented and non-instrumented version
+  # Build non-asan-instrumented version of project
   steps = build_project.get_build_steps_for_project(
       project, config, use_caching=use_cached_image)
 
@@ -86,13 +86,11 @@ def run_afl_experiment(project_name,
   project = build_project.Project(project_name, project_yaml,
                                   dockerfile_contents)
 
-  asan_build = build_project.Build('afl', 'address', 'x86_64')
   fuzz_build = build_project.Build('afl', 'none', 'x86_64')
   local_output_path = '/workspace/output.log'
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   fuzz_target_path = os.path.join(fuzz_build.out, target_name)
-  asan_target_path = os.path.join(asan_build.out, target_name)
   local_target_dir = os.path.join(fuzz_build.out, 'target')
   local_afl_output_dir = os.path.join(fuzz_build.out, f"{target_name}_afl_none_out")
   afl_queue_path = os.path.join(local_afl_output_dir, "default", "queue")
@@ -101,7 +99,7 @@ def run_afl_experiment(project_name,
   env.append('RUN_FUZZER_MODE=interactive')
   env.append('CORPUS_DIR=' + local_corpus_path)
 
-  run_step = {
+run_step = {
       'name':
           'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
       'env':
@@ -111,43 +109,18 @@ def run_afl_experiment(project_name,
           '-c',
           (f'mkdir -p {local_corpus_path} && '
            f'mkdir -p {local_target_dir} && '
+           f'('
+           f' while true; do '
+           f'   sleep 300; '
+           f'   gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path} || true; '
+           f' done '
+           f') & '
            f'timeout {run_timeout}s run_fuzzer {target_name} '
            f'|& tee {local_output_path} || true'),
       ]
   }
 
-  # upload fuzzer output
-  steps.append(build_lib.dockerify_run_step(run_step, fuzz_build))
-  steps.append({
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', local_output_path, output_path]
-  })
-
-  if upload_drivers_path:
-    # Upload compiled binaries. Copy the binary directly from fuzz_target_path and asan_target_path
-    steps.append({
-        'name':
-            'gcr.io/cloud-builders/gsutil',
-        'args': [
-            '-m',
-            'cp',
-            asan_target_path,
-            upload_drivers_path + "/asan_driver"
-        ],
-    })
-
-    steps.append({
-        'name':
-            'gcr.io/cloud-builders/gsutil',
-        'args': [
-            '-m',
-            'cp',
-            fuzz_target_path,
-            upload_drivers_path + "/fuzz_driver"
-        ],
-    })
-
-  # Upload the whole afl 'out' directory.
+  # Upload afl results
   steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -155,14 +128,33 @@ def run_afl_experiment(project_name,
           '/bin/bash',
       'args': [
           '-c',
-          (f'gsutil -m cp -r {local_afl_output_dir} {upload_afl_output_path}'
+          (f'gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path}'
           '|| true'),
       ],
   })
 
-# Get baseline harness coverage
-  build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
-  env = build_project.get_env(project_yaml['language'], build)
+  # upload fuzzer stdout
+  steps.append(build_lib.dockerify_run_step(run_step, fuzz_build))
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', local_output_path, output_path]
+  })
+
+#   if upload_drivers_path:
+#     steps.append({
+#         'name':
+#             'gcr.io/cloud-builders/gsutil',
+#         'args': [
+#             '-m',
+#             'rsync',
+#             fuzz_target_path,
+#             upload_drivers_path + "/fuzz_driver"
+#         ],
+#     })
+
+# # Get baseline harness coverage
+#   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
+#   env = build_project.get_env(project_yaml['language'], build)
 
 #   if use_cached_image:
 #     project.cached_sanitizer = 'coverage'
@@ -273,123 +265,123 @@ def run_afl_experiment(project_name,
 #       ],
 #   })
 
-  # Get normal coverage!
-  # Copy the queue corpus to the coverage dir
-  steps.append({
-      'name':
-          'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
-      'args': [
-          'bash',
-          '-c',
-          f"cp {afl_queue_path}/* {local_corpus_path}"
-    ]
-  })
+#   # Get normal coverage!
+#   # Copy the queue corpus to the coverage dir
+#   steps.append({
+#       'name':
+#           'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
+#       'args': [
+#           'bash',
+#           '-c',
+#           f"cp {afl_queue_path}/* {local_corpus_path}"
+#     ]
+#   })
 
-  steps.append(
-      build_project.get_compile_step(project, build, env, config.parallel))
+#   steps.append(
+#       build_project.get_compile_step(project, build, env, config.parallel))
 
-  # Generate coverage report.
-  env.extend([
-      # The coverage script automatically adds the target name to this.
-      'CORPUS_DIR=' + local_corpus_path_base,
-      'HTTP_PORT=',
-      f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
-      "AFL_COV=1"
-  ])
-  steps.append({
-      'name':
-          'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
-      'env':
-          env,
-      'entrypoint':
-          '/bin/bash',
-      'args': [
-          '-c',
-          (
-              f'timeout 3h coverage {target_name}; ret=$?; '
-              '[ $ret -eq 124 ] '  # Exit code 124 indicates a time out.
-              f'&& echo "coverage {target_name} timed out after 30 minutes" '
-              f'|| echo "coverage {target_name} completed with exit code $ret"'
-          ),
-      ],
-  })
+#   # Generate coverage report.
+#   env.extend([
+#       # The coverage script automatically adds the target name to this.
+#       'CORPUS_DIR=' + local_corpus_path_base,
+#       'HTTP_PORT=',
+#       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
+#       "AFL_COV=1"
+#   ])
+#   steps.append({
+#       'name':
+#           'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
+#       'env':
+#           env,
+#       'entrypoint':
+#           '/bin/bash',
+#       'args': [
+#           '-c',
+#           (
+#               f'timeout 3h coverage {target_name}; ret=$?; '
+#               '[ $ret -eq 124 ] '  # Exit code 124 indicates a time out.
+#               f'&& echo "coverage {target_name} timed out after 30 minutes" '
+#               f'|| echo "coverage {target_name} completed with exit code $ret"'
+#           ),
+#       ],
+#   })
 
-  # Upload fuzzer stats directory
-  steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'fuzzer_stats'),
-          os.path.join(upload_coverage_path, 'fuzzer_stats'),
-      ],
-  })
+#   # Upload fuzzer stats directory
+#   steps.append({
+#       'name':
+#           'gcr.io/cloud-builders/gsutil',
+#       'args': [
+#           '-m',
+#           'cp',
+#           '-r',
+#           os.path.join(build.out, 'fuzzer_stats'),
+#           os.path.join(upload_coverage_path, 'fuzzer_stats'),
+#       ],
+#   })
 
-  # Upload raw coverage data.
-  steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'dumps'),
-          os.path.join(upload_coverage_path, 'dumps'),
-      ],
-  })
+#   # Upload raw coverage data.
+#   steps.append({
+#       'name':
+#           'gcr.io/cloud-builders/gsutil',
+#       'args': [
+#           '-m',
+#           'cp',
+#           '-r',
+#           os.path.join(build.out, 'dumps'),
+#           os.path.join(upload_coverage_path, 'dumps'),
+#       ],
+#   })
 
-  # Upload lcov report.
-  steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'lcov_reports'),
-          os.path.join(upload_coverage_path, 'lcov_reports'),
-      ],
-  })
+#   # Upload lcov report.
+#   steps.append({
+#       'name':
+#           'gcr.io/cloud-builders/gsutil',
+#       'args': [
+#           '-m',
+#           'cp',
+#           '-r',
+#           os.path.join(build.out, 'lcov_reports'),
+#           os.path.join(upload_coverage_path, 'lcov_reports'),
+#       ],
+#   })
 
 
-  # Upload coverage report.
-  steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'report'),
-          os.path.join(upload_coverage_path, 'report'),
-      ],
-  })
+#   # Upload coverage report.
+#   steps.append({
+#       'name':
+#           'gcr.io/cloud-builders/gsutil',
+#       'args': [
+#           '-m',
+#           'cp',
+#           '-r',
+#           os.path.join(build.out, 'report'),
+#           os.path.join(upload_coverage_path, 'report'),
+#       ],
+#   })
 
-  # Upload textcovs.
-  steps.append({
-      'name':
-          'gcr.io/cloud-builders/gsutil',
-      'args': [
-          '-m',
-          'cp',
-          '-r',
-          os.path.join(build.out, 'textcov_reports'),
-          os.path.join(upload_coverage_path, 'textcov_reports'),
-      ],
-  })
+#   # Upload textcovs.
+#   steps.append({
+#       'name':
+#           'gcr.io/cloud-builders/gsutil',
+#       'args': [
+#           '-m',
+#           'cp',
+#           '-r',
+#           os.path.join(build.out, 'textcov_reports'),
+#           os.path.join(upload_coverage_path, 'textcov_reports'),
+#       ],
+#   })
 
-  # Copy the queue corpus to the coverage dir
-  steps.append({
-      'name':
-          'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
-      'args': [
-          'bash',
-          '-c',
-          f"cp {afl_queue_path}/* {local_corpus_path}"
-    ]
-  })
+#   # Copy the queue corpus to the coverage dir
+#   steps.append({
+#       'name':
+#           'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
+#       'args': [
+#           'bash',
+#           '-c',
+#           f"cp {afl_queue_path}/* {local_corpus_path}"
+#     ]
+#   })
 
   cloud_project = "oss-fuzz"
   if "LOCAL_TEST" in os.environ:

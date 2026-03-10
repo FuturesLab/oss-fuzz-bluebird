@@ -39,6 +39,7 @@ import build_lib
 
 FUZZING_BUILD_TYPE = 'fuzzing'
 INDEXER_BUILD_TYPE = 'indexer'
+COMPILE_TIMEOUT_LIMIT = '15m'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
@@ -318,7 +319,7 @@ def get_compile_step(project,
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile {compile_output_redirect}|| '
+           f'mkdir -p {build.out} && timeout {COMPILE_TIMEOUT_LIMIT} compile {compile_output_redirect}|| '
            f'(echo "{failure_msg}" && false)'),
       ],
       'id': get_id('compile', build),
