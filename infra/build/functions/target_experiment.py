@@ -99,7 +99,7 @@ def run_afl_experiment(project_name,
   env.append('RUN_FUZZER_MODE=interactive')
   env.append('CORPUS_DIR=' + local_corpus_path)
 
-run_step = {
+  run_step = {
       'name':
           'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
       'env':
