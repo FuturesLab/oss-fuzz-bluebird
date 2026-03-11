@@ -98,7 +98,6 @@ def run_afl_experiment(project_name,
   env = build_project.get_env(project_yaml['language'], fuzz_build)
   env.append('RUN_FUZZER_MODE=interactive')
   env.append('CORPUS_DIR=' + local_corpus_path)
-
   run_step = {
       'name':
           'ghcr.io/gabe-sherman/oss-fuzz-base-runner',
@@ -111,14 +110,23 @@ def run_afl_experiment(project_name,
            f'mkdir -p {local_target_dir} && '
            f'('
            f' while true; do '
-           f'   sleep 300; '
-           f'   gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path} || true; '
+           f'   sleep 5; '
+           f'   echo "syncing {local_afl_output_dir} to {upload_afl_output_path}" | tee -a {local_output_path} || true'
+           f'   gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path} |& tee -a {local_output_path} || true; '
            f' done '
            f') & '
            f'timeout {run_timeout}s run_fuzzer {target_name} '
            f'|& tee {local_output_path} || true'),
       ]
   }
+
+  steps.append(build_lib.dockerify_run_step(run_step, fuzz_build))
+
+  # upload fuzzer stdout
+  steps.append({
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', local_output_path, output_path]
+  })
 
   # Upload afl results
   steps.append({
@@ -131,13 +139,6 @@ def run_afl_experiment(project_name,
           (f'gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path}'
           '|| true'),
       ],
-  })
-
-  # upload fuzzer stdout
-  steps.append(build_lib.dockerify_run_step(run_step, fuzz_build))
-  steps.append({
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', local_output_path, output_path]
   })
 
 #   if upload_drivers_path:
