@@ -126,7 +126,7 @@ def run_afl_experiment(project_name,
           '-c',
         (
             f'while [ ! -f /workspace/fuzzing_done ]; do '
-            f'  gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path} '
+            f'  gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path}; '
             f'  sleep 120; '
             f'done'
         ),
