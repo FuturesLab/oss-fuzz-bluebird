@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-CXXFLAGS="$CXXFLAGS -fuse-ld=lld"
-CFLAGS="$CFLAGS -fuse-ld=lld"
 ./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
 make
 
