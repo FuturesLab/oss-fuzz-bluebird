@@ -33,8 +33,5 @@ for f in $fuzzers; do
       -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H
 
     # combine all seeds into target zip
-    if [ -d "$SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}_corpus" ]; then
-        zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/gpac/testsuite/oss-fuzzers/*_corpus/*
-    fi
-
+    zip -r $OUT/${fuzzerName}_seed_corpus.zip $SRC/gpac/testsuite/media/*
 done
