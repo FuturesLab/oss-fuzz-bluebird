@@ -39,7 +39,7 @@ import build_lib
 
 FUZZING_BUILD_TYPE = 'fuzzing'
 INDEXER_BUILD_TYPE = 'indexer'
-COMPILE_TIMEOUT_LIMIT = '10m'
+COMPILE_TIMEOUT_LIMIT = '15m'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'

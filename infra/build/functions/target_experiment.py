@@ -109,14 +109,31 @@ def run_afl_experiment(project_name,
           (f'mkdir -p {local_corpus_path} && '
            f'mkdir -p {local_target_dir} && '
            f'timeout {run_timeout}s run_fuzzer {target_name} '
-           f'|& tee -a {local_output_path} || true'),
+           f'|& tee -a {local_output_path} || true && '
+           f'touch /workspace/fuzzing_done'),
       ]
   }
 
-  docker_run_step = build_lib.dockerify_run_step(run_step, fuzz_build)
+  docker_run_step = build_lib.dockerify_run_step(run_step, fuzz_build, container_name="fuzz_process", detach=True)
   steps.append(docker_run_step)
 
-  # Upload afl results
+  steps.append({
+      'name':
+          'gcr.io/cloud-builders/gsutil',
+      'entrypoint':
+          '/bin/bash',
+      'args': [
+          '-c',
+        (
+            f'while [ ! -f /workspace/fuzzing_done ]; do '
+            f'  gsutil -m rsync -r {local_afl_output_dir} {upload_afl_output_path} '
+            f'  sleep 120; '
+            f'done'
+        ),
+    ],
+  })
+
+  # Upload final afl results
   steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',

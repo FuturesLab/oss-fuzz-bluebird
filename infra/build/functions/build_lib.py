@@ -139,7 +139,8 @@ def get_targets_list_url(bucket, project, sanitizer):
 def dockerify_run_step(step,
                        build,
                        use_architecture_image_name=False,
-                       container_name=None):
+                       container_name=None,
+                       detach=False):
   """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
   allows us to specify which architecture to run the image on."""
   image = step['name']
@@ -154,6 +155,8 @@ def dockerify_run_step(step,
       'run', '--platform', platform, '-v', '/workspace:/workspace',
       '--privileged', '--cap-add=all'
   ]
+  if detach:
+    new_args.append("-d")
 
   if container_name:
     new_args.extend(['--name', container_name])
