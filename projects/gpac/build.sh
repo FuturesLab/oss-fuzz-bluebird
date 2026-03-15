@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-CXXFLAGS="$CXXFLAGS -fuse-ld=lld"
-CFLAGS="$CFLAGS -fuse-ld=lld"
 ./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
 make
 
@@ -33,5 +30,5 @@ for f in $fuzzers; do
       -lm -lz -lpthread -lssl -lcrypto -DGPAC_HAVE_CONFIG_H
 
     # combine all seeds into target zip
-    zip -r $OUT/${fuzzerName}_seed_corpus.zip $SRC/gpac/testsuite/media/*
+    zip -r $OUT/${fuzzerName}_seed_corpus.zip $SRC/seeds/*
 done
