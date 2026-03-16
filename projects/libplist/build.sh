@@ -33,7 +33,9 @@ done
 
 zip -j $OUT/bplist_fuzzer_seed_corpus.zip test/data/*.bplist
 zip -j $OUT/xplist_fuzzer_seed_corpus.zip test/data/*.plist
-zip -j $OUT/jplist_fuzzer_seed_corpus.zip test/data/*.json
 zip -j $OUT/oplist_fuzzer_seed_corpus.zip test/data/*.ostep
+
+# combine all corpus files for target
+zip -j $OUT/jplist_fuzzer_seed_corpus.zip test/data/*.json test/data/*.ostep test/data/*.plist test/data/*.bplist
 
 cp fuzz/*.dict fuzz/*.options $OUT/
