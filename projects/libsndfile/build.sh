@@ -24,3 +24,5 @@ for fuzzer in sndfile_alt_fuzzer sndfile_fuzzer; do
   echo "[libfuzzer]" > ${OUT}/${fuzzer}.options
   echo "close_fd_mask = 3" >> ${OUT}/${fuzzer}.options
 done
+
+zip -r $OUT/sndfile_alt_fuzzer_seed_corpus.zip $SRC/seeds/*
