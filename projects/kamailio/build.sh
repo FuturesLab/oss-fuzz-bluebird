@@ -44,3 +44,4 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_msg.o -o $OUT/fuzz_parse_msg \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
     -I./src/ -I./src/core/parser -ldl -lresolv -lm
 
+zip -j $OUT/fuzz_uri_seed_corpus.zip test/misc/sip/* test/misc/cfg/*
