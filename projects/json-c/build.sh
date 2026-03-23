@@ -27,4 +27,7 @@ for f in $SRC/json-c/fuzz/*_fuzzer.cc; do
     $CXX $CXXFLAGS -std=c++17 -I$SRC/json-c -I$SRC/json-c/json-c-build\
          $SRC/json-c/fuzz/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
          $LIB_FUZZING_ENGINE $SRC/json-c/json-c-build/libjson-c.a
+    
+    zip -j $OUT/${fuzzer}_fuzzer_seed_corpus.zip $SRC/json-c/tests/*.json
 done
+
