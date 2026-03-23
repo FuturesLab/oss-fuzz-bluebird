@@ -96,7 +96,7 @@ def run_afl_experiment(project_name,
   afl_queue_path = os.path.join(local_afl_output_dir, "default", "queue")
 
   env = build_project.get_env(project_yaml['language'], fuzz_build)
-  env.append('RUN_FUZZER_MODE=interactive')
+  env.append('RUN_FUZZER_MODE=noninteractive')
   env.append('CORPUS_DIR=' + local_corpus_path)
   run_step = {
       'name':
