@@ -17,3 +17,5 @@
 
 ./oss-fuzz/build.sh
 
+zip -j $OUT/cbor_load_fuzzer_seed_corpus.zip ./examples/data/* ./test/data/*
+
