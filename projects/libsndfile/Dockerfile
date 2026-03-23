@@ -16,6 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN apt-get -y install autoconf autogen automake libtool pkg-config python
 RUN git clone --depth 1 https://github.com/libsndfile/libsndfile.git /src/libsndfile
 RUN mkdir -p seeds && \
     for dir in A-codecs A-codecs/MP3 AIFF au; do \

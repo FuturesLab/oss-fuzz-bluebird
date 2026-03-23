@@ -28,33 +28,56 @@ echo '#!/bin/bash' > /usr/local/bin/mkdir
 echo '/bin/mkdir -p "$@"' >> /usr/local/bin/mkdir
 chmod +x /usr/local/bin/mkdir
 
-# Redundant 'find' commands for every build are costly, patch this out
-python3 - <<'PY'
-from pathlib import Path
-p = Path("contrib/oss-fuzz/build.sh")
-s = p.read_text()
-old = """mkdir afl_testcases
-(cd afl_testcases; tar xf "$SRC/afl_testcases.tgz")
-mkdir tif
-find afl_testcases -type f -name '*.tif' -exec mv -n {} tif/ \;
-zip -rj tif.zip tif/
-cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
-cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
-"""
-new = """if [ ! -d "afl_testcases" ]; then
+pushd "$SRC/zlib"
+./configure --static --prefix="$WORK"
+make -j$(nproc) CFLAGS="$CFLAGS -fPIC"
+make install
+popd
+
+# Build libjpeg-turbo
+pushd "$SRC/libjpeg-turbo"
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC=on -DENABLE_SHARED=off
+make -j$(nproc)
+make install
+popd
+
+# Build libjbig
+pushd "$SRC/jbigkit"
+if [ "$ARCHITECTURE" = "i386" ]; then
+    echo "#!/bin/bash" > gcc
+    echo "clang -m32 \$*" >> gcc
+    chmod +x gcc
+    PATH=$PWD:$PATH make lib
+else
+    make lib
+fi
+
+mv "$SRC"/jbigkit/libjbig/*.a "$WORK/lib/"
+mv "$SRC"/jbigkit/libjbig/*.h "$WORK/include/"
+popd
+
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DBUILD_SHARED_LIBS=off
+make -j$(nproc)
+make install
+
+if [ "$ARCHITECTURE" = "i386" ]; then
+    $CXX $CXXFLAGS -std=c++11 -I$WORK/include \
+        $SRC/libtiff/contrib/oss-fuzz/tiff_read_rgba_fuzzer.cc -o $OUT/tiff_read_rgba_fuzzer \
+        $LIB_FUZZING_ENGINE $WORK/lib/libtiffxx.a $WORK/lib/libtiff.a $WORK/lib/libz.a $WORK/lib/libjpeg.a \
+        $WORK/lib/libjbig.a $WORK/lib/libjbig85.a
+else
+    $CXX $CXXFLAGS -std=c++11 -I$WORK/include \
+        $SRC/libtiff/contrib/oss-fuzz/tiff_read_rgba_fuzzer.cc -o $OUT/tiff_read_rgba_fuzzer \
+        $LIB_FUZZING_ENGINE $WORK/lib/libtiffxx.a $WORK/lib/libtiff.a $WORK/lib/libz.a $WORK/lib/libjpeg.a \
+        $WORK/lib/libjbig.a $WORK/lib/libjbig85.a -Wl,-Bstatic -llzma -Wl,-Bdynamic
+fi
+
+if [ ! -d "afl_testcases" ]; then
     mkdir afl_testcases
     (cd afl_testcases; tar xf "$SRC/afl_testcases.tgz")
     mkdir tif
     find afl_testcases -type f -name '*.tif' -exec mv -n {} tif/ \;
+    zip -rj tif.zip tif/
+    cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
+    cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
 fi
-zip -rj tif.zip tif/
-cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
-cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
-"""
-if old in s:
-    s = s.replace(old, new, 1)
-    p.write_text(s)
-PY
-
-
-. contrib/oss-fuzz/build.sh
