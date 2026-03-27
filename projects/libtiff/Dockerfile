@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm liblzma-dev
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/madler/zlib
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
