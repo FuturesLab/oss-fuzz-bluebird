@@ -27,7 +27,7 @@ fi
 sh ./autogen.sh
 # enable-release to skip unstable preR13. bindings are not fuzzed.
 ./configure --disable-shared --disable-bindings --enable-release
-make
+make -j12
 
 $CC $CFLAGS src/.libs/libredwg.a -I./include -I./src -c examples/llvmfuzz.c
 
@@ -38,3 +38,5 @@ cp $SRC/llvmfuzz.options $OUT/llvmfuzz.options
 
 # Build unit test
 make check-prep -C test/unit-testing/ -j$(nproc)
+
+zip -r $OUT/llvmfuzz_seed_corpus.zip $SRC/libredwg/test/test-data/*/*.dwg $SRC/libredwg/test/test-data/example*
