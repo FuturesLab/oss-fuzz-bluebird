@@ -29,8 +29,12 @@ cp FuzzStunClient $OUT/FuzzStunClient
 popd
 
 pushd fuzzing/input/
-cp FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
+# cp FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
 cp FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
+
+unzip FuzzStun_seed_corpus.zip -d combined
+unzip FuzzStunClient_seed_corpus.zip -d combined
+zip -r $OUT/FuzzStun_seed_corpus.zip combined/
 popd
 
 pushd /lib/x86_64-linux-gnu/
