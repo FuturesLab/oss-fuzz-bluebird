@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake libssl-dev libevent-dev
+RUN wget https://github.com/openssl/openssl/releases/download/openssl-3.0.19/openssl-3.0.19.tar.gz
 RUN git clone https://github.com/coturn/coturn
 COPY build.sh $SRC/
 WORKDIR $SRC/coturn/

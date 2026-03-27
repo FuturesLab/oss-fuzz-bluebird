@@ -14,26 +14,41 @@
 # limitations under the License.
 #
 ################################################################################
+pushd $SRC
+if [ ! -d openssl-3.0.19 ]; then
+    tar -xf openssl-3.0.19.tar.gz
+    cd openssl-3.0.19
+    ./Configure linux-x86_64 no-tests no-docs
+    make -j"$(nproc)"
+    make install_sw
+fi
+popd
 
 mkdir my_build
 
 pushd my_build/
+# cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
 cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,'\$ORIGIN/lib'" -DWITH_MYSQL=OFF -Wno-dev ../.
+    -DCMAKE_EXE_LINKER_FLAGS="-lm -Wl,-rpath,'\$ORIGIN/lib'" -DWITH_MYSQL=OFF -Wno-dev ../. -DBUILD_SHARED_LIBS=OFF
 make -j$(nproc)
 popd
 
-pushd my_build/fuzzing/
-cp FuzzStun $OUT/FuzzStun
-cp FuzzStunClient $OUT/FuzzStunClient
-popd
+$CC $CFLAGS -I$SRC/coturn/src/apps/common -I$SRC/coturn/src/client \
+    -I$SRC/coturn/src/server -I$SRC/coturn/src \
+    $SRC/coturn/fuzzing/FuzzStun.c -o $OUT/FuzzStun $LIB_FUZZING_ENGINE \
+    $SRC/coturn/my_build/lib/libturn_server.a \
+    $SRC/coturn/my_build/lib/libturncommon.a \
+    $SRC/coturn/my_build/lib/libturnclient.a \
+    $SRC/openssl-3.0.19/libssl.a \
+    $SRC/openssl-3.0.19/libcrypto.a \
+    -ldl -pthread -lm
 
 pushd fuzzing/input/
 # cp FuzzStun_seed_corpus.zip $OUT/FuzzStun_seed_corpus.zip
 cp FuzzStunClient_seed_corpus.zip $OUT/FuzzStunClient_seed_corpus.zip
 
-unzip FuzzStun_seed_corpus.zip -d combined
-unzip FuzzStunClient_seed_corpus.zip -d combined
+unzip -n FuzzStun_seed_corpus.zip -d combined
+unzip -n FuzzStunClient_seed_corpus.zip -d combined
 zip -r $OUT/FuzzStun_seed_corpus.zip combined/
 popd
 
