@@ -18,7 +18,7 @@ pushd $SRC
 if [ ! -d openssl-3.0.19 ]; then
     tar -xf openssl-3.0.19.tar.gz
     cd openssl-3.0.19
-    ./Configure linux-x86_64 no-tests no-docs
+    ./Configure linux-x86_64 no-tests
     make -j"$(nproc)"
     make install_sw
 fi
