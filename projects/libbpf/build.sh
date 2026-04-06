@@ -56,7 +56,7 @@ export SKIP_LIBELF_REBUILD=${SKIP_LIBELF_REBUILD:=''}
 # due to https://bugs.gentoo.org/794601) so let's just point the script to
 # commits referring to versions of libelf that actually can be built
 if [[ ! -e elfutils || "$SKIP_LIBELF_REBUILD" == "" ]]; then
-    git clone https://sourceware.org/git/elfutils.git || true
+    git clone https://github.com/libbpf/elfutils-mirror.git elfutils || true
     (
         cd elfutils
         git checkout 67a187d4c1790058fc7fd218317851cb68bb087c
