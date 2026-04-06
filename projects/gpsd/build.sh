@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,27 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y scons python3-distutils
-RUN git clone --depth 1 https://gitlab.com/gpsd/gpsd
-RUN git clone --depth 1 https://github.com/adalogics/ada-fuzzers
-RUN cp -r $SRC/ada-fuzzers/projects/gpsd/fuzzer $SRC/gpsd/fuzzer && \
-    cp -r $SRC/ada-fuzzers/projects/gpsd/corp $SRC/gpsd/corp
-WORKDIR $SRC/gpsd/
+export CC="$CC $CFLAGS"
+export CXX="$CXX $CFLAGS"
+export CFLAGS=""
+export CXXFLAGS="$CFLAGS"
+
+# Build GPSD
+scons
+
+# Build fuzzers
+pushd fuzzer/
+make
+popd
+
+# Prepare and copy fuzzers and corpus to $OUT
+for fuzzer in FuzzJson FuzzPacket FuzzDrivers FuzzClient FuzzDriversStructured
+do
+  cp fuzzer/${fuzzer} $OUT/
+  zip -j $OUT/${fuzzer}_seed_corpus.zip $SRC/gpsd/corp/*_seed_corpus/*
+  # Copy dictionary if it exists
+  if [ -f "fuzzer/${fuzzer}.dict" ]; then
+    cp fuzzer/${fuzzer}.dict $OUT/
+  fi
+done
+
