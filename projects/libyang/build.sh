@@ -29,8 +29,11 @@ for fuzzer in lyd_parse_mem_json lyd_parse_mem_xml lys_parse_mem; do
     ./libyang.a ${static_pcre}
 done
 
+zip -j $OUT/lyd_parse_mem_xml_seed_corpus.zip tests/modules/yang/*.yang tests/yanglint/data/*.xml tests/yangre/files/*.txt 
+
 # Build test
 mkdir $SRC/libyang/build-test
 cd $SRC/libyang/build-test
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
+
