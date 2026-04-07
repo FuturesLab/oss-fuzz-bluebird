@@ -41,6 +41,8 @@ mkdir -p "$SRC/shared_seeds"
 for f in tests/fuzz/seed/*.zip; do
   unzip -o "$f" -d "$SRC/shared_seeds"
 done
-zip -r "$OUT/fuzz-vpx_seed_corpus.zip" -j "$SRC/shared_seeds"
+
 # Copy all seed corpus and dictionaries to $OUT
 cp tests/fuzz/seed/* $OUT/
+rm -rf $OUT/fuzz-vpx_seed_corpus.zip
+zip -r "$OUT/fuzz-vpx_seed_corpus.zip" -j "$SRC/shared_seeds"
