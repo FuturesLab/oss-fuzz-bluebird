@@ -39,4 +39,4 @@ do
   cat "$in_file" >> "corpus/$out_file"
 done
 
-zip -j $OUT/hoedown_fuzzer_corpus.zip corpus/*
+zip -j $OUT/hoedown_fuzzer_seed_corpus.zip corpus/*
