@@ -15,7 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev
+RUN apt-get update && apt-get install -y make autoconf automake zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libidn2-dev \
+    libnghttp2-dev \
+    librtmp-dev \
+    libssh-dev \
+    libpsl-dev \
+    nettle-dev \
+    libgnutls28-dev \
+    libkrb5-dev \
+    libldap2-dev \
+    libbrotli-dev
 RUN git clone --depth 1 --shallow-submodules --recurse-submodules https://github.com/samtools/htslib.git htslib
 WORKDIR htslib
 COPY build.sh $SRC/
