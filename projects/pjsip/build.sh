@@ -32,7 +32,7 @@ FuzzBins=$(find . -name "*.c")
 
 for File in $FuzzBins; do
     FuzzBin=$(basename $File .c)
-    cp $FuzzBin $OUT/$FuzzBin
+    mv $FuzzBin $OUT/$FuzzBin
 done
 popd
 
@@ -43,6 +43,6 @@ for f in tests/fuzz/seed/*.zip; do
 done
 
 # Copy all seed corpus and dictionaries to $OUT
-cp tests/fuzz/seed/* $OUT/
+mv tests/fuzz/seed/* $OUT/
 rm -rf $OUT/fuzz-vpx_seed_corpus.zip
 zip -r "$OUT/fuzz-vpx_seed_corpus.zip" -j "$SRC/shared_seeds"
