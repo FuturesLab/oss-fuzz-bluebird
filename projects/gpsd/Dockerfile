@@ -20,3 +20,5 @@ RUN git clone --depth 1 https://github.com/adalogics/ada-fuzzers
 RUN cp -r $SRC/ada-fuzzers/projects/gpsd/fuzzer $SRC/gpsd/fuzzer && \
     cp -r $SRC/ada-fuzzers/projects/gpsd/corp $SRC/gpsd/corp
 WORKDIR $SRC/gpsd/
+COPY build.sh $SRC/
+
