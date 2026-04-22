@@ -20,7 +20,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y openjdk-11-jdk
 
-RUN git clone --depth 1 https://github.com/libical/libical.git
+RUN git clone https://github.com/libical/libical.git
 COPY run_tests.sh build.sh $SRC/
 COPY *.cc $SRC/
 WORKDIR libical
+RUN git checkout 2d494cb8f58577c6ea030ac8495b3083925ba36c

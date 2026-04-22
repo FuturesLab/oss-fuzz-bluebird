@@ -19,4 +19,5 @@ RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/janet-lang/janet
 
 WORKDIR $SRC/janet
+RUN git checkout c6b802b082aa21b6e65e8c2729c85237b0cc8a24
 COPY run_tests.sh build.sh $SRC/

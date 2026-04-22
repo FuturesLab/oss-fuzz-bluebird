@@ -29,4 +29,5 @@ RUN mkdir -p seeds && \
 
 
 WORKDIR $SRC/libsndfile
+RUN git checkout 68f6c16
 COPY build.sh $SRC/

@@ -20,3 +20,4 @@ RUN git clone https://chromium.googlesource.com/webm/libvpx
 ADD https://storage.googleapis.com/downloads.webmproject.org/test_data/fuzzer/vpx_fuzzer_seed_corpus.zip $SRC/
 COPY build.sh vpx_dec_fuzzer.dict $SRC/
 WORKDIR libvpx
+RUN git checkout 3c456eb

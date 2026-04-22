@@ -15,8 +15,10 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y scons python3-distutils
-RUN git clone --depth 1 https://gitlab.com/gpsd/gpsd
+RUN git clone https://gitlab.com/gpsd/gpsd
 RUN git clone --depth 1 https://github.com/adalogics/ada-fuzzers
 RUN cp -r $SRC/ada-fuzzers/projects/gpsd/fuzzer $SRC/gpsd/fuzzer && \
     cp -r $SRC/ada-fuzzers/projects/gpsd/corp $SRC/gpsd/corp
 WORKDIR $SRC/gpsd/
+RUN git checkout 5beda63c06e5483f44bfcf181835b44816f08956
+COPY build.sh $SRC

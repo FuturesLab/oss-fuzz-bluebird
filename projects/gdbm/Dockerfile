@@ -42,6 +42,7 @@ RUN set -- $(apt-cache policy autoconf | \
 	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
 	make install); \
     fi
-RUN git clone --depth 1 https://git.gnu.org.ua/gdbm.git
+RUN git clone https://git.gnu.org.ua/gdbm.git
 WORKDIR gdbm
+RUN git checkout fb46d987d613e4d56981d30f2b9f34288ef42858
 COPY run_tests.sh build.sh $SRC/

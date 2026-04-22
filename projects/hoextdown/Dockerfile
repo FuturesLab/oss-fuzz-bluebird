@@ -16,6 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool tidy
-RUN git clone --depth 1 https://github.com/kjdev/hoextdown.git hoextdown
+RUN git clone https://github.com/kjdev/hoextdown.git hoextdown
 WORKDIR hoextdown
+RUN git checkout 67bcc7e
 COPY run_tests.sh build.sh *.options *.dict $SRC/

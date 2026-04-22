@@ -24,9 +24,10 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool curl tcl
 #     curl 'https://www.sqlite.org/src/tarball?ci=d0c4a5853b6838e7fcc4bc59927c6edaa461e719' -o sqlite3.tar.gz && \
 #     tar xzf sqlite3.tar.gz
 
-RUN git clone --depth 1 https://github.com/sqlite/sqlite.git sqlite3
+RUN git clone https://github.com/sqlite/sqlite.git sqlite3
 
 RUN find $SRC/sqlite3 -name "*.test" | xargs zip $SRC/ossfuzz_seed_corpus.zip
 
 WORKDIR sqlite3
+RUN git checkout 5c6404a
 COPY build.sh *.dict *.options run_tests.sh $SRC/

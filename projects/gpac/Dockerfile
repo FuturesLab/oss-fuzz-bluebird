@@ -25,3 +25,4 @@ RUN mkdir -p seeds && \
 
 COPY build.sh $SRC/
 WORKDIR $SRC/gpac
+RUN git checkout 4311266
