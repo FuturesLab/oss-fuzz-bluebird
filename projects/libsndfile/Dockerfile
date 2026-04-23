@@ -18,14 +18,17 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get -y install autoconf autogen automake libtool pkg-config python
 RUN git clone --depth 1 https://github.com/libsndfile/libsndfile.git /src/libsndfile
+RUN mkdir -p seeds
+
 RUN mkdir -p seeds && \
     for dir in A-codecs A-codecs/MP3 AIFF au; do \
-        BASE_URL="https://samples.ffmpeg.org/$dir/"; \
-        echo "Fetching samples from $BASE_URL..."; \
-        wget -qO- "$BASE_URL" \
-        | grep -oP '(?<=href=")[^"]+\.(wav|mp3|aif|aiff|au)' \
-        | xargs -I{} wget -q -P seeds "$BASE_URL/{}"; \
-    done
+        base="https://samples.ffmpeg.org/$dir/"; \
+        wget -qO- "$base" | \
+        grep -oE 'href="[^"]+\.(wav|mp3|aif|aiff|au)"' | \
+        sed -E "s|^href=\"|$base|;s|\"$||" >> seeds_list.txt; \
+    done && \
+    wget -q -P seeds -i seeds_list.txt --tries=3 && \
+    rm seeds_list.txt
 
 
 WORKDIR $SRC/libsndfile
