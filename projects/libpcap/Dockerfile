@@ -16,11 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake flex bison
-RUN git clone https://github.com/the-tcpdump-group/libpcap.git libpcap
-# for corpus as wireshark
-RUN git clone --depth=1 https://github.com/the-tcpdump-group/tcpdump.git tcpdump
-WORKDIR libpcap
+WORKDIR $SRC
+
+RUN git clone https://github.com/the-tcpdump-group/libpcap.git
+RUN git clone --depth=1 https://github.com/the-tcpdump-group/tcpdump.git
+
+WORKDIR $SRC/libpcap
 RUN git checkout 44aa24f
+
 WORKDIR $SRC
 COPY build.sh $SRC/
 
