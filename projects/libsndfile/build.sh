@@ -51,6 +51,5 @@ for fuzzer in sndfile_alt_fuzzer sndfile_fuzzer; do
   echo "close_fd_mask = 3" >> ${OUT}/${fuzzer}.options
 done
 
-if [ -d $SRC/seeds ]; then 
-  zip -r $OUT/sndfile_alt_fuzzer_seed_corpus.zip $SRC/seeds/*
-fi
+cp $SRC/seeds.zip $OUT/sndfile_alt_fuzzer_seed_corpus.zip 
+

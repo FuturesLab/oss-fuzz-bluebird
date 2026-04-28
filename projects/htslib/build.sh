@@ -34,5 +34,12 @@ make -j$(nproc) test/hts_endian test/fieldarith test/hfile test/pileup test/pile
 # build fuzzers
 $CXX $CXXFLAGS -o "$OUT/hts_open_fuzzer" test/fuzz/hts_open_fuzzer.o $LIB_FUZZING_ENGINE libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread
 
-zip -j $OUT/hts_open_fuzzer_seed_corpus.zip test/*.sam test/*.fai test/*.fa test/*.bai  test/*.cram test/*.bam test/*.crai
- 
+mkdir -p seeds
+
+cp test/*.sam test/*.fai test/*.fa test/*.bai test/*.cram test/*.bam test/*.crai seeds/
+
+rm -f seeds/*large*
+rm -f seeds/ce.fa
+rm -f seeds/ce#1000.sam
+
+zip -j "$OUT/hts_open_fuzzer_seed_corpus.zip" seeds/*
