@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-git checkout devel
+git checkout -f devel
 git checkout 8a07083d78dbb779fe449d6b1fc17ccfda733cf9
 
 mkdir build && cd build
