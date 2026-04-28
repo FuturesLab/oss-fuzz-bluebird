@@ -26,5 +26,4 @@ RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
     make install
 
 WORKDIR $SRC/libyang
-RUN git checkout f302d86
 COPY run_tests.sh build.sh $SRC/
