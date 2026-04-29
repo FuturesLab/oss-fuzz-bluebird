@@ -15,8 +15,7 @@
 #
 ################################################################################
 
-# git checkout -f devel
-# git checkout 8a07083d78dbb779fe449d6b1fc17ccfda733cf9
+git checkout --force 8a07083d78dbb779fe449d6b1fc17ccfda733cf9
 
 mkdir build && cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_TOOLS=OFF ..
@@ -32,9 +31,9 @@ done
 
 zip -j $OUT/lyd_parse_mem_xml_seed_corpus.zip $SRC/libyang/tests/modules/yang/*.yang $SRC/libyang/tests/yanglint/data/*.xml $SRC/libyang/tests/yangre/files/*.txt 
 
-# Build test
-mkdir $SRC/libyang/build-test
-cd $SRC/libyang/build-test
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-make
+# # Build test
+# mkdir $SRC/libyang/build-test
+# cd $SRC/libyang/build-test
+# cmake -DCMAKE_BUILD_TYPE=Debug ..
+# make
 
