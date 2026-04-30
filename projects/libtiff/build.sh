@@ -20,14 +20,6 @@
 export WORK=/worktmp
 mkdir -p $WORK
 
-cp $WORK/lib/* $SRC/jbigkit/libjbig/ 2>/dev/null || true
-cp $WORK/include/* $SRC/jbigkit/libjbig/ 2>/dev/null || true
-
-# mkdir commands run into issues when building normally
-echo '#!/bin/bash' > /usr/local/bin/mkdir
-echo '/bin/mkdir -p "$@"' >> /usr/local/bin/mkdir
-chmod +x /usr/local/bin/mkdir
-
 pushd "$SRC/zlib"
 ./configure --static --prefix="$WORK"
 make -j$(nproc) CFLAGS="$CFLAGS -fPIC"
@@ -52,13 +44,17 @@ else
     make lib
 fi
 
-mv "$SRC"/jbigkit/libjbig/*.a "$WORK/lib/"
-mv "$SRC"/jbigkit/libjbig/*.h "$WORK/include/"
+cp "$SRC"/jbigkit/libjbig/*.a "$WORK/lib/"
+cp "$SRC"/jbigkit/libjbig/*.h "$WORK/include/"
 popd
 
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DBUILD_SHARED_LIBS=off
-make -j$(nproc)
-make install
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK \
+        -DBUILD_SHARED_LIBS=off \
+        -Dtiff-tools=OFF \
+        -Dtiff-tests=OFF \
+        -Dtiff-contrib=OFF \
+        -Dtiff-docs=OFF
+make install -j$(nproc)
 
 if [ "$ARCHITECTURE" = "i386" ]; then
     $CXX $CXXFLAGS -std=c++11 -I$WORK/include \
@@ -78,6 +74,6 @@ if [ ! -d "afl_testcases" ]; then
     mkdir tif
     find afl_testcases -type f -name '*.tif' -exec mv -n {} tif/ \;
     zip -rj tif.zip tif/
-    cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
-    cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
 fi
+cp tif.zip "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip"
+cp "$SRC/tiff.dict" "$OUT/tiff_read_rgba_fuzzer.dict"
