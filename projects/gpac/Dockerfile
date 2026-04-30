@@ -17,12 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y build-essential pkg-config libz-dev
 RUN git clone https://github.com/gpac/gpac && cd gpac && git submodule update --init --remote --recursive
-RUN mkdir -p seeds && \
-    wget -qO- https://samples.ffmpeg.org/MPEG-4/ \
-    | grep -oP '(?<=href=")[^"]+\.mp4' \
-    | xargs -I{} wget -P seeds https://samples.ffmpeg.org/MPEG-4/{}
 
 
-COPY build.sh $SRC/
+COPY build.sh seeds.zip $SRC/
 WORKDIR $SRC/gpac
 RUN git checkout 4311266
