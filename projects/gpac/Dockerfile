@@ -19,6 +19,6 @@ RUN apt-get update && apt-get install -y build-essential pkg-config libz-dev
 RUN git clone https://github.com/gpac/gpac && cd gpac && git submodule update --init --remote --recursive
 
 
-COPY build.sh seeds.zip $SRC/
+COPY build.sh seeds_p1.zip seeds_p2.zip $SRC/
 WORKDIR $SRC/gpac
 RUN git checkout 4311266

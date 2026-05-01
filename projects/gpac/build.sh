@@ -17,6 +17,9 @@
 ./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
 make
 
+# Seeds had to be split due to size, so combine them into main seed zip
+cp $SRC/seeds_p1.zip $SRC/seeds.zip
+zip -u $SRC/seeds.zip -r $SRC/seeds_p2.zip
 
 fuzzers=$(find $SRC/gpac/testsuite/oss-fuzzers -name "fuzz_m2ts_probe.c")
 for f in $fuzzers; do
