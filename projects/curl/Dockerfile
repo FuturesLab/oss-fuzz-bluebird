@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+WORKDIR $SRC
 
 RUN git clone https://github.com/curl/curl.git /src/curl
 RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
@@ -22,7 +23,7 @@ RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
 # Use curl-fuzzer's scripts to get latest dependencies.
 RUN $SRC/curl_fuzzer/scripts/ossfuzzdeps.sh
 
-WORKDIR /src/curl
+WORKDIR $SRC/curl
 RUN git checkout 50ff4f2
 
 WORKDIR $SRC/curl_fuzzer
