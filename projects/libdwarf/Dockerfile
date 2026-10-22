@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get -qq update && apt-get install -qq -y cmake make zlib1g-dev
-RUN git clone --depth=1 https://github.com/davea42/libdwarf-code $SRC/libdwarf
+RUN git clone https://github.com/davea42/libdwarf-code $SRC/libdwarf
 RUN git clone --depth=1 https://github.com/davea42/libdwarf-binary-samples $SRC/libdwarf-binary-samples
 WORKDIR libdwarf
+RUN git checkout 1a62beb
 COPY build.sh run_tests.sh $SRC/

@@ -21,24 +21,30 @@ export BINARY_SAMPLES_V1="$BINARY_SAMPLES_DIR/binary-samples"
 export BINARY_SAMPLES_V2="$BINARY_SAMPLES_DIR/binary-samples-v2"
 export FUZZER_DIR="$SRC/libdwarf/fuzz"
 
-mkdir $SRC/corp
-cp $BINARY_SAMPLES_V1/elf* $SRC/corp
-cp $BINARY_SAMPLES_V1/Mach* $SRC/corp
-cp $BINARY_SAMPLES_V1/pe* $SRC/corp
-cp $BINARY_SAMPLES_V1/lib* $SRC/corp
-for file in $BINARY_SAMPLES_V2/{linux,windows}/*_DWARF*/* $BINARY_SAMPLES_V2/macOS-arm/*/*; do 
- export newfile=$(echo $file | sed 's/ /_/g')
- # e.g. cp "..." /out/windows_gcc11_DWARF2_cross-platform.exe
- cp "$file" $SRC/corp/$(echo "$newfile" | cut -d/ -f5,6 | sed 's/\//_/g')_$(basename "$newfile")
-done
 
-zip -r -j $OUT/fuzz_seed_corpus.zip $SRC/corp
-for fuzzFile in $FUZZER_DIR/fuzz*.c; do
-  fuzzName=$(basename "$fuzzFile" '.c')
-  cp $OUT/fuzz_seed_corpus.zip $OUT/${fuzzName}_seed_corpus.zip
-done
-rm $OUT/fuzz_seed_corpus.zip
+if [ ! -d "$SRC/corp" ]; then
+  mkdir -p "$SRC/corp"
 
+  cp "$BINARY_SAMPLES_V1"/elf* "$SRC/corp"
+  cp "$BINARY_SAMPLES_V1"/Mach* "$SRC/corp"
+  cp "$BINARY_SAMPLES_V1"/pe* "$SRC/corp"
+  cp "$BINARY_SAMPLES_V1"/lib* "$SRC/corp"
+
+  for file in $BINARY_SAMPLES_V2/{linux,windows}/*_DWARF*/* \
+               $BINARY_SAMPLES_V2/macOS-arm/*/*; do
+    newfile=$(echo "$file" | sed 's/ /_/g')
+    cp "$file" "$SRC/corp/$(echo "$newfile" | cut -d/ -f5,6 | sed 's/\//_/g')_$(basename "$newfile")"
+  done
+
+  zip -r -j "$OUT/fuzz_seed_corpus.zip" "$SRC/corp"
+  # Only compile fuzz_str_offsets since this is the target for oss-fuzz-gen
+  for fuzzFile in "$FUZZER_DIR"/fuzz_str_offsets.c; do
+    fuzzName=$(basename "$fuzzFile" '.c')
+    cp "$OUT/fuzz_seed_corpus.zip" "$OUT/${fuzzName}_seed_corpus.zip"
+  done
+
+  rm "$OUT/fuzz_seed_corpus.zip"
+fi
 
 # Build fuzzers
 mkdir build

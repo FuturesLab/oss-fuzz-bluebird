@@ -23,5 +23,7 @@ RUN git clone https://github.com/vstakhov/libucl
 
 WORKDIR $SRC/libucl
 
+RUN git checkout e4b95c6
+
 COPY build.sh run_tests.sh $SRC/
 COPY ucl_add_string_fuzzer.options $SRC/ucl_add_string_fuzzer.options

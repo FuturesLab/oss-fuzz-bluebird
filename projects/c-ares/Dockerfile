@@ -20,4 +20,6 @@ RUN git clone --depth 1 https://github.com/c-ares/c-ares.git
 RUN git clone --depth 1 https://github.com/google/googletest
 
 WORKDIR c-ares
+# Commit-specific checkout for reproducibility
+RUN git checkout bd7d871 
 COPY build.sh run_tests.sh $SRC/

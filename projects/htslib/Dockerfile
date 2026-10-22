@@ -25,8 +25,9 @@ RUN apt-get update && apt-get install -y make autoconf automake zlib1g-dev libbz
     libkrb5-dev \
     libldap2-dev \
     libbrotli-dev
-RUN git clone --depth 1 --shallow-submodules --recurse-submodules https://github.com/samtools/htslib.git htslib
+RUN git clone --shallow-submodules --recurse-submodules https://github.com/samtools/htslib.git htslib
 WORKDIR htslib
+RUN git checkout 63076c5
 COPY build.sh $SRC/
 COPY run_tests.sh $SRC/
 

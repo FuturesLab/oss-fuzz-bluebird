@@ -17,8 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config zlib1g-dev libpci-dev
-RUN git clone --depth 1 https://github.com/liblouis/liblouis
+RUN git clone https://github.com/liblouis/liblouis
 WORKDIR liblouis
+RUN git checkout 040cc85
 RUN sed -i 's/main/main2/g' tests/fuzzing/fuzz_backtranslate.c && \
     sed -i 's/main/main2/g' tests/fuzzing/fuzz_translate_generic.c && \
     sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_backtranslate.c && \

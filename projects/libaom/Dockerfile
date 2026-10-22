@@ -20,3 +20,4 @@ RUN git clone https://aomedia.googlesource.com/aom
 ADD https://storage.googleapis.com/aom-test-data/fuzzer/dec_fuzzer_seed_corpus.zip $SRC/
 COPY build.sh $SRC/
 WORKDIR aom
+RUN git checkout 4d2fa92
