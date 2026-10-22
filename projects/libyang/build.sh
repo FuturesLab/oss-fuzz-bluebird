@@ -15,13 +15,11 @@
 #
 ################################################################################
 
-git checkout 8a07083d78dbb779fe449d6b1fc17ccfda733cf9
-
 mkdir build && cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_TOOLS=OFF ..
 make
 
-static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
+static_pcre=($(find /src/pcre2-10.44 -name "libpcre2-8.a"))
 
 for fuzzer in lyd_parse_mem_json lyd_parse_mem_xml lys_parse_mem; do
   $CC $CFLAGS -c ../tests/fuzz/${fuzzer}.c -I./libyang

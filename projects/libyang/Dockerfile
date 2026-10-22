@@ -16,7 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake libtool libcmocka-dev
-RUN git clone https://github.com/CESNET/libyang
+RUN git clone https://github.com/CESNET/libyang && \
+    cd libyang && \
+    git checkout 8a07083d78dbb779fe449d6b1fc17ccfda733cf9
 
 RUN wget https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.44/pcre2-10.44.tar.gz && \
     tar xzf pcre2-10.44.tar.gz && \
