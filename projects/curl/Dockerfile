@@ -27,3 +27,4 @@ RUN git checkout 50ff4f2
 
 WORKDIR $SRC/curl_fuzzer
 COPY build.sh run_tests.sh $SRC/
+
